@@ -250,22 +250,25 @@ footer.site .footer-legal p{max-width:none;padding-top:24px;border-top:1px solid
   .pulse-line path{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:trace 2.8s cubic-bezier(.45,.05,.25,1) .4s forwards}
   @keyframes trace{to{stroke-dashoffset:0}}
 }
-.video-dialog{width:min(1200px,calc(100vw - 32px));padding:0;border:0;border-radius:18px;background:var(--orbit);color:var(--orbit-ink);box-shadow:0 30px 80px rgba(0,0,0,.45)}
-.video-dialog::backdrop{background:rgba(8,18,26,.82)}
-.video-dialog video{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#000;border-radius:18px 18px 0 0}
-.video-dialog .vd-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px;font-size:14px;color:var(--orbit-soft)}
-.video-dialog .vd-bar p{margin:0;max-width:none}
-.video-dialog button{min-height:40px;padding:0 18px;border-radius:999px;border:1.5px solid rgba(233,241,238,.5);background:none;color:var(--orbit-ink);font:600 15px/1 var(--sans);cursor:pointer}
-.video-dialog button:hover{border-color:var(--orbit-ink)}
-@media (max-width:560px){.video-dialog .vd-bar{flex-direction:column;align-items:flex-start}}
+.demo{background:radial-gradient(1200px 700px at 50% 30%,#1c3a50 0%,var(--orbit) 60%);color:var(--orbit-ink);padding:96px var(--gutter) 40px;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}
+.demo-frame{position:relative;width:min(1280px,100%,calc((100svh - 230px) * 16 / 9));aspect-ratio:16/9;border-radius:22px;overflow:hidden;background:#000;box-shadow:0 40px 100px -30px rgba(0,0,0,.7)}
+.demo-frame video{display:block;width:100%;height:100%;object-fit:cover}
+.demo-sound{position:absolute;right:16px;top:16px;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;border:0;background:rgba(247,244,236,.94);color:var(--orbit);font:600 15px/1 var(--sans);cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.demo-sound[hidden]{display:none}
+.demo-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;width:min(1280px,100%,calc((100svh - 230px) * 16 / 9));font-size:14px;color:var(--orbit-soft)}
+.demo-meta p{margin:0;max-width:none}
+.demo-next{color:var(--orbit-ink);font-weight:600;text-decoration:none;white-space:nowrap}
+.demo-next:hover{text-decoration:underline}
+@media (max-width:700px){.demo{min-height:auto;padding-top:84px}.demo-frame,.demo-meta{width:100%}}
 </style>
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
 <header class="bar">
-  <a class="brand" href="#top" aria-label="HEXTA, back to top"><picture><source srcset="assets/icon.svg" media="(prefers-reduced-motion: reduce)"><img src="assets/icon-anime.svg" alt="" width="42" height="42"></picture><span>HEXTA</span></a>
+  <a class="brand" href="#demo" aria-label="HEXTA, back to top"><picture><source srcset="assets/icon.svg" media="(prefers-reduced-motion: reduce)"><img src="assets/icon-anime.svg" alt="" width="42" height="42"></picture><span>HEXTA</span></a>
   <nav aria-label="Sections">
+    <a href="#demo">Demo</a>
     <a href="#problem">Problem</a>
     <a href="#solution">Solution</a>
     <a href="#screens">Prototype</a>
@@ -276,6 +279,18 @@ footer.site .footer-legal p{max-width:none;padding-top:24px;border-top:1px solid
 </header>
 
 <main id="main">
+  <section class="demo" id="demo" aria-label="HEXTA 30-second demo video">
+    <div class="demo-frame">
+      <video id="demo-video" controls playsinline preload="auto" poster="media/hexta-demo-poster.jpg">
+        <source src="media/hexta-demo.mp4" type="video/mp4">
+      </video>
+      <button type="button" class="demo-sound" id="demo-sound">Sound on <span aria-hidden="true">🔊</span></button>
+    </div>
+    <div class="demo-meta">
+      <p>30-second demo with English captions. Voice and music AI-generated (ElevenLabs). Footage courtesy of NASA. Simulated crew data.</p>
+      <a class="demo-next" href="#top">Explore the project <span aria-hidden="true">↓</span></a>
+    </div>
+  </section>
   <section class="hero" id="top" aria-labelledby="hero-title">
     <svg class="pulse-line" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
       <path id="pulse" d="M0 70 C 240 64 600 60 900 60 L 1010 60 L 1032 38 L 1054 94 L 1078 12 L 1104 102 L 1126 60 L 1190 60 C 1300 61 1380 64 1440 68"/>
@@ -284,7 +299,7 @@ footer.site .footer-legal p{max-width:none;padding-top:24px;border-top:1px solid
       <h1 id="hero-title">Health care that keeps going when Earth goes quiet.</h1>
       <p class="lede">HEXTA helps a long-duration crew log their health every day, see the trends that matter and hand the right information to the crew medical officer, even while the ground link is down.</p>
       <div class="actions">
-        <a class="btn btn-main" href="media/hexta-demo.mp4" data-video-open aria-haspopup="dialog">See the prototype <span aria-hidden="true">▶</span></a>
+        <a class="btn btn-main" href="#demo">Watch the demo <span aria-hidden="true">▶</span></a>
         <a class="btn btn-ghost" href="#sources">Check our sources</a>
       </div>
       <p class="hero-meta">NASA Space Apps Challenge 2026, Casablanca. Team Synergy 5, École Centrale Casablanca. Simulated crew data.</p>
@@ -483,7 +498,7 @@ footer.site .footer-legal p{max-width:none;padding-top:24px;border-top:1px solid
 <footer class="site">
   <div class="wrap footer-grid">
     <div class="footer-brand">
-      <a class="brand" href="#top"><img src="assets/icon.svg" alt=""><span>HEXTA</span></a>
+      <a class="brand" href="#demo"><img src="assets/icon.svg" alt=""><span>HEXTA</span></a>
       <p>Crew health monitoring for long-duration missions.</p>
     </div>
     <div>
@@ -726,32 +741,23 @@ footer.site .footer-legal p{max-width:none;padding-top:24px;border-top:1px solid
   }
 })();
 </script>
-<dialog class="video-dialog" id="video-dialog" aria-label="HEXTA 30-second demo">
-  <video id="demo-video" controls playsinline preload="none" poster="media/hexta-demo-poster.jpg">
-    <source src="media/hexta-demo.mp4" type="video/mp4">
-  </video>
-  <div class="vd-bar">
-    <p>30-second demo with English captions. Narration voice and music generated with AI (ElevenLabs). Footage courtesy of NASA. Screens: the HEXTA prototype with simulated crew data.</p>
-    <button type="button" data-video-close>Close</button>
-  </div>
-</dialog>
-
 <script>
 (function () {
-  var dialog = document.getElementById('video-dialog');
   var video = document.getElementById('demo-video');
-  if (!dialog || typeof dialog.showModal !== 'function') { return; }
-  document.querySelectorAll('[data-video-open]').forEach(function (link) {
-    link.addEventListener('click', function (event) {
-      event.preventDefault();
-      dialog.showModal();
-      var playing = video.play();
-      if (playing && playing.catch) { playing.catch(function () {}); }
-    });
+  var sound = document.getElementById('demo-sound');
+  if (!video || !sound) { return; }
+  var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion) {
+    video.muted = true;
+    var started = video.play();
+    if (started && started.catch) { started.catch(function () { sound.hidden = true; }); }
+  } else {
+    sound.hidden = true;
+  }
+  sound.addEventListener('click', function () {
+    video.muted = false; video.currentTime = 0; video.play(); sound.hidden = true;
   });
-  dialog.querySelector('[data-video-close]').addEventListener('click', function () { dialog.close(); });
-  dialog.addEventListener('click', function (event) { if (event.target === dialog) { dialog.close(); } });
-  dialog.addEventListener('close', function () { video.pause(); });
+  video.addEventListener('volumechange', function () { if (!video.muted) { sound.hidden = true; } });
 })();
 </script>
 </body>
