@@ -257,8 +257,15 @@ footer.site .footer-legal p{max-width:none;padding-top:24px;border-top:1px solid
 .demo-sound[hidden]{display:none}
 .demo-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;width:min(1280px,100%,calc((100svh - 230px) * 16 / 9));font-size:14px;color:var(--orbit-soft)}
 .demo-meta p{margin:0;max-width:none}
-.demo-next{color:var(--orbit-ink);font-weight:600;text-decoration:none;white-space:nowrap}
-.demo-next:hover{text-decoration:underline}
+.demo-next{display:inline-flex;align-items:center;gap:10px;min-height:48px;padding:0 24px;border-radius:999px;background:var(--sand);color:var(--orbit);font-weight:700;font-size:16px;text-decoration:none;white-space:nowrap;box-shadow:0 0 0 0 rgba(230,215,181,.6)}
+.demo-next:hover{background:#F0E4C8}
+.demo-next span{display:inline-block}
+@media (prefers-reduced-motion:no-preference){
+  .demo-next{animation:nextGlow 2s ease-out infinite}
+  .demo-next span{animation:nextBounce 1.4s ease-in-out infinite}
+  @keyframes nextGlow{0%{box-shadow:0 0 0 0 rgba(230,215,181,.65)}70%{box-shadow:0 0 0 16px rgba(230,215,181,0)}100%{box-shadow:0 0 0 0 rgba(230,215,181,0)}}
+  @keyframes nextBounce{0%,100%{transform:translateY(-2px)}50%{transform:translateY(4px)}}
+}
 @media (max-width:700px){.demo{min-height:auto;padding-top:84px}.demo-frame,.demo-meta{width:100%}}
 </style>
 </head>
