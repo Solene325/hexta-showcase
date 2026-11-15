@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HEXTA · Crew health for long missions</title>
+<meta name="description" content="HEXTA helps a long-duration crew log health data, see the trends that matter and hand the right information to the crew medical officer, even when the ground link is down. NASA Space Apps Challenge 2026, team Synergy 5.">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:"Young Serif";src:url(fonts/youngserif-400-latin.woff2) format("woff2");font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Young Serif";src:url(fonts/youngserif-400-latin-ext.woff2) format("woff2");font-display:swap;unicode-range:U+0100-024F,U+0259,U+1E00-1EFF,U+2020,U+20A0-20AB,U+20AD-20CF,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Figtree Local";src:url(fonts/figtree-400-latin.woff2) format("woff2");font-display:swap}
+
+:root{
+  --mist:#EEF3F0;
+  --paper:#F8FBF9;
+  --ink:#1B302B;
+  --ink-soft:#4A615A;
+  --sage:#4F8C77;
+  --sage-deep:#2F5E50;
+  --sage-pale:#D7E7DF;
+  --pulse:#8C2D45;
+  --pulse-soft:#F1DDE2;
+  --sand:#E6D7B5;
+  --orbit:#13283A;
+  --orbit-ink:#E9F1EE;
+  --orbit-soft:#9DB5B0;
+  --line:#CFDDD6;
+  --serif:"Young Serif",Georgia,serif;
+  --sans:"Figtree","Figtree Local",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --gutter:clamp(20px,5vw,72px);
+  --measure:62ch;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--mist);color:var(--ink);font:400 18px/1.6 var(--sans);text-rendering:optimizeLegibility}
+img{display:block;max-width:100%;height:auto}
+a{color:var(--sage-deep);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--sand);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-999px;top:12px;background:var(--ink);color:var(--paper);padding:10px 16px;border-radius:8px;z-index:20}
+.skip:focus{left:12px}
+.wrap{padding:0 var(--gutter);max-width:1360px;margin:0 auto}
+h1,h2,h3{font-family:var(--serif);font-weight:400;letter-spacing:-.005em;margin:0}
+h2{font-size:clamp(34px,4.4vw,56px);line-height:1.08;max-width:18ch}
+h3{font-size:24px;line-height:1.2}
+p{margin:0}
+.lede{font-size:clamp(19px,1.6vw,22px);line-height:1.55;color:var(--ink-soft);max-width:var(--measure)}
+.cite{font-size:.62em;vertical-align:.55em;line-height:0;margin-left:1px}
+.cite a{text-decoration:none;font-weight:600;color:var(--sage-deep)}
+.cite a:hover{text-decoration:underline}
+section{position:relative}
+.section{padding:clamp(80px,11vw,150px) 0}
+
+/* ---------- Top bar ---------- */
+.bar{position:fixed;inset:0 0 auto 0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:18px var(--gutter);color:var(--orbit-ink);transition:background-color .25s ease,box-shadow .25s ease,padding .25s ease}
+.bar.scrolled{background:rgba(19,40,58,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 8px 24px -16px rgba(0,0,0,.6);padding-top:12px;padding-bottom:12px}
+main section[id]{scroll-margin-top:76px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.brand img{width:42px;height:42px}
+.brand span{font-family:var(--serif);font-size:24px;letter-spacing:.04em}
+.bar nav{display:flex;gap:26px;font-size:15px;font-weight:500}
+.bar nav a{color:var(--orbit-ink);text-decoration:none;opacity:.86}
+.bar nav a:hover{opacity:1;text-decoration:underline}
+@media (max-width:860px){.bar nav{display:none}}
+
+/* ---------- Hero ---------- */
+.hero{min-height:100vh;min-height:100svh;background:var(--orbit) url(images/nasa/iss071e439624.jpg) center 34%/cover no-repeat;color:var(--orbit-ink);display:flex;align-items:flex-end;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(19,40,58,.55) 0%,rgba(19,40,58,.1) 38%,rgba(19,40,58,.15) 55%,rgba(19,40,58,.92) 100%)}
+.pulse-line{position:absolute;left:0;right:0;top:calc(29% - 60px);width:100%;height:120px;pointer-events:none}
+.pulse-line path{fill:none;stroke:var(--pulse-soft);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(241,221,226,.55))}
+.pulse-line .beat{stroke:#E8A5B5}
+.hero-copy{position:relative;z-index:2;padding:120px var(--gutter) clamp(48px,8vh,96px);max-width:1360px;margin:0 auto;width:100%}
+.hero h1{font-size:clamp(40px,5.4vw,80px);line-height:1.04;max-width:16ch;text-wrap:balance}
+.hero .lede{color:#D3E1DD;margin-top:26px;max-width:54ch}
+.hero h1,.hero .lede{text-shadow:0 2px 28px rgba(13,28,40,.65)}
+@media (max-width:700px){
+  .hero{background-position:62% 8%;background-size:auto 70%;background-color:#0b1824}
+  .hero::before{background:linear-gradient(180deg,rgba(19,40,58,.25) 0%,rgba(19,40,58,.35) 40%,rgba(11,24,36,.96) 62%,#0b1824 100%)}
+  .pulse-line{top:calc(30% - 60px)}
+}
+.actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:36px}
+.btn{display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 24px;border-radius:999px;font:600 16px/1 var(--sans);text-decoration:none;border:1.5px solid transparent}
+.btn-main{background:var(--sand);color:var(--orbit)}
+.btn-main:hover{background:#F0E4C8}
+.btn-ghost{border-color:rgba(233,241,238,.5);color:var(--orbit-ink)}
+.btn-ghost:hover{border-color:var(--orbit-ink)}
+.hero-meta{margin-top:42px;font-size:14px;color:var(--orbit-soft);max-width:70ch}
+.hero-meta a{color:var(--orbit-soft)}
+
+/* ---------- Problem ---------- */
+.problem-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(40px,7vw,110px);align-items:start}
+.quote{margin:0;border-left:3px solid var(--pulse);padding:4px 0 4px 28px}
+.quote p{font-family:var(--serif);font-size:clamp(24px,2.4vw,32px);line-height:1.32;color:var(--ink)}
+.quote footer{margin-top:18px;font-size:15px;color:var(--ink-soft)}
+.facts{display:grid;gap:30px;margin-top:8px}
+.fact strong{display:block;font-family:var(--serif);font-weight:400;font-size:clamp(40px,4vw,54px);line-height:1;color:var(--pulse)}
+.fact p{margin-top:8px;color:var(--ink-soft);max-width:38ch}
+.problem-close{margin-top:56px;font-size:clamp(20px,1.8vw,24px);max-width:60ch}
+@media (max-width:900px){.problem-grid{grid-template-columns:1fr}}
+
+/* ---------- Loop ---------- */
+.loop-section{background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.loop{list-style:none;margin:64px 0 0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;counter-reset:step}
+.loop li{position:relative;padding:28px 26px 4px 0;counter-increment:step}
+.loop li::before{content:counter(step);display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--sage-pale);color:var(--sage-deep);font:600 16px/1 var(--sans);margin-bottom:22px}
+.loop li::after{content:"";position:absolute;top:48px;left:52px;right:12px;height:2px;background:linear-gradient(90deg,var(--sage) 0 50%,transparent 50%) 0 0/12px 2px repeat-x;opacity:.55}
+.loop li:last-child::after{display:none}
+.loop h3{font-size:22px}
+.loop p{margin-top:10px;color:var(--ink-soft);font-size:16px;line-height:1.55}
+.agent-note{margin-top:64px;display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:start;padding:26px 28px;border-radius:20px;background:var(--pulse-soft)}
+.agent-note svg{width:34px;height:34px;color:var(--pulse)}
+.agent-note p{color:#4B2531}
+@media (max-width:1000px){.loop{grid-template-columns:1fr 1fr}.loop li::after{display:none}}
+@media (max-width:560px){.loop{grid-template-columns:1fr}}
+
+/* ---------- Screens (horizontal) ---------- */
+.screens-head{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.track-controls{display:flex;gap:10px}
+.track-controls button{width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;display:grid;place-items:center}
+.track-controls button:hover{border-color:var(--sage)}
+.track-controls svg{width:22px;height:22px}
+.track{display:flex;gap:28px;overflow-x:auto;scroll-snap-type:x mandatory;padding:48px var(--gutter) 28px;margin-top:8px;scrollbar-width:thin;scrollbar-color:var(--sage) transparent;overscroll-behavior-x:contain}
+.track::-webkit-scrollbar{height:8px}
+.track::-webkit-scrollbar-thumb{background:var(--sage);border-radius:8px}
+.shot{flex:0 0 auto;width:min(78vw,980px);scroll-snap-align:center;margin:0}
+.shot.mobile{width:min(46vw,300px)}
+.shot .frame{border-radius:18px;overflow:hidden;background:var(--paper);border:1px solid var(--line);box-shadow:0 30px 60px -30px rgba(27,48,43,.45)}
+.shot figcaption{margin-top:16px;max-width:60ch}
+.shot figcaption b{display:block;font-family:var(--serif);font-weight:400;font-size:21px}
+.shot figcaption span{color:var(--ink-soft);font-size:16px}
+
+/* ---------- 3D ---------- */
+.model-section{background:var(--orbit);color:var(--orbit-ink);overflow:hidden}
+.model-section .lede{color:#C8D8D3}
+.model-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:clamp(32px,5vw,80px);align-items:center;margin-top:56px}
+.viewer{position:relative;aspect-ratio:4/5;max-height:760px;border-radius:28px;background:radial-gradient(ellipse at 50% 38%,#23405A 0%,#16304A 46%,#0F2233 100%);overflow:hidden;cursor:grab;touch-action:pan-y}
+.viewer:active{cursor:grabbing}
+.viewer canvas{display:block;width:100%;height:100%}
+.viewer-hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);font-size:14px;color:var(--orbit-soft);background:rgba(15,34,51,.7);padding:8px 14px;border-radius:999px;white-space:nowrap}
+.viewer-fallback{position:absolute;inset:0;display:grid;place-items:center;padding:30px;text-align:center;color:var(--orbit-soft)}
+.zones{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.zones button{width:100%;text-align:left;display:grid;grid-template-columns:14px 1fr;gap:16px;align-items:start;background:none;border:0;border-radius:16px;padding:16px 18px;color:var(--orbit-ink);font:inherit;cursor:pointer}
+.zones button:hover,.zones button[aria-pressed=true]{background:rgba(233,241,238,.08)}
+.zones i{width:12px;height:12px;border-radius:50%;margin-top:9px;background:var(--sage)}
+.zones button[aria-pressed=true] i{background:#E8A5B5;box-shadow:0 0 0 5px rgba(232,165,181,.22)}
+.zones b{font-weight:600;font-size:18px}
+.zones span{display:block;color:var(--orbit-soft);font-size:15.5px;margin-top:3px;line-height:1.5}
+.zones span.cite{display:inline;margin-top:0}
+.zones .cite a{color:#9FD3BF}
+.model-credit{margin-top:22px;font-size:14px;color:var(--orbit-soft)}
+.model-credit a{color:var(--orbit-soft)}
+@media (max-width:900px){.model-grid{grid-template-columns:1fr}.viewer{aspect-ratio:1/1}}
+
+/* ---------- Health ---------- */
+.health-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:28px;margin-top:64px}
+.card{grid-column:span 4;background:var(--paper);border-radius:22px;overflow:hidden;border:1px solid var(--line);display:flex;flex-direction:column}
+.card.wide{grid-column:span 8}
+.card img{width:100%;aspect-ratio:3/2;object-fit:cover}
+.card.wide img{aspect-ratio:16/8}
+.card .body{padding:24px 26px 28px;display:flex;flex-direction:column;gap:10px;flex:1}
+.card h3{font-size:23px}
+.card p{color:var(--ink-soft);font-size:16.5px;line-height:1.55}
+.card .tracks{margin-top:auto;padding-top:10px;font-size:15px;color:var(--sage-deep);font-weight:600}
+.card.alert-card{background:var(--pulse);border-color:var(--pulse);color:#FBEFF2}
+.card.alert-card .body{padding:30px 28px}
+.card.alert-card h3{color:#fff}
+.card.alert-card p{color:#F5DCE2}
+.card.alert-card .cite a{color:#fff}
+.alert-steps{margin:8px 0 0;padding:0;list-style:none;counter-reset:alert;display:grid;gap:14px}
+.alert-steps li{counter-increment:alert;display:grid;grid-template-columns:28px 1fr;gap:10px;font-size:15.5px;line-height:1.5;color:#F5DCE2}
+.alert-steps li::before{content:counter(alert);display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.16);color:#fff;font-weight:600;font-size:14px}
+.alert-steps b{color:#fff;font-weight:600}
+@media (max-width:1000px){.card,.card.wide{grid-column:span 6}}
+@media (max-width:640px){.card,.card.wide{grid-column:span 12}}
+
+/* ---------- Data ---------- */
+.data-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(32px,6vw,90px);margin-top:56px}
+.datasets{display:grid;gap:22px}
+.dataset{padding:24px 0;border-top:1px solid var(--line)}
+.dataset h3{font-size:22px}
+.dataset p{color:var(--ink-soft);margin-top:8px;font-size:16.5px}
+.dataset .meta{margin-top:10px;font-size:14.5px;color:var(--sage-deep)}
+.osdr{background:var(--orbit);color:var(--orbit-ink);border-radius:26px;padding:clamp(26px,3vw,40px);align-self:start}
+.osdr h3{font-size:24px}
+.osdr p{color:#C8D8D3;margin-top:10px;font-size:16px}
+.spark{margin-top:26px;width:100%;height:auto}
+.spark .ref{fill:rgba(157,181,176,.16)}
+.spark path{fill:none;stroke:var(--sand);stroke-width:2.5}
+.spark circle{fill:var(--sand)}
+.spark text{fill:var(--orbit-soft);font:500 13px var(--sans)}
+.osdr small{display:block;margin-top:14px;color:var(--orbit-soft);font-size:13.5px}
+.stack{margin-top:72px;display:flex;flex-wrap:wrap;gap:10px 12px;align-items:center}
+.stack b{font-weight:600;font-size:16px;margin-right:6px}
+.chip{position:relative;display:inline-block}
+.chip button{font:inherit;font-size:15px;padding:8px 14px;border-radius:999px;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);cursor:pointer}
+.chip button:hover,.chip button[aria-expanded=true]{border-color:var(--sage);color:var(--ink)}
+.chip button[aria-expanded=true]{background:var(--sage-pale)}
+.tip{position:absolute;left:0;bottom:calc(100% + 12px);z-index:10;width:min(340px,86vw);padding:18px 20px;border-radius:16px;background:var(--orbit);color:var(--orbit-ink);box-shadow:0 18px 40px -18px rgba(13,28,40,.6);display:grid;gap:8px;font-size:15px;line-height:1.5}
+.tip[hidden]{display:none}
+.tip::after{content:"";position:absolute;left:22px;top:100%;border:8px solid transparent;border-top-color:var(--orbit)}
+.tip b{font-weight:600;font-size:16px}
+.tip span{color:#C8D8D3}
+.tip.align-right{left:auto;right:0}
+.tip.align-right::after{left:auto;right:22px}
+@media (max-width:900px){.data-grid{grid-template-columns:1fr}}
+
+/* ---------- Impact ---------- */
+.impact-section{background:var(--paper);border-top:1px solid var(--line)}
+.impact-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:36px;margin-top:56px}
+.impact-grid h3{font-size:22px;padding-top:20px;border-top:3px solid var(--sage)}
+.impact-grid div:last-child h3{border-color:var(--sand)}
+.impact-grid p{margin-top:12px;color:var(--ink-soft);font-size:16.5px}
+.limits{margin-top:72px;padding:28px 30px;border-radius:20px;border:1.5px dashed var(--line);max-width:900px}
+.limits h3{font-size:21px}
+.limits p{margin-top:8px;color:var(--ink-soft);font-size:16.5px}
+@media (max-width:1000px){.impact-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.impact-grid{grid-template-columns:1fr}}
+
+/* ---------- Gateway + sources ---------- */
+.gateway{min-height:62vh;background:var(--orbit) url(images/nasa/Gateway-Set-1-IAC7-4k-BG_10.jpg) center/cover no-repeat;color:var(--orbit-ink);display:flex;align-items:flex-end}
+.gateway::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(19,40,58,0) 30%,rgba(19,40,58,.92) 100%)}
+.gateway .wrap{position:relative;padding-bottom:64px;width:100%}
+.gateway h2{max-width:20ch}
+.gateway p{margin-top:16px;color:#D3E1DD;max-width:60ch}
+.gateway .actions{margin-top:28px}
+.sources{columns:2 420px;column-gap:56px;margin:48px 0 0;padding:0 0 0 1.4em;font-size:15.5px;color:var(--ink-soft)}
+.sources li{break-inside:avoid;margin-bottom:12px;padding-left:4px}
+.sources li::marker{color:var(--sage-deep);font-weight:600}
+.sources li:target{background:var(--sage-pale);border-radius:8px}
+footer.site{background:var(--orbit);color:var(--orbit-soft);font-size:15.5px;padding:72px 0 36px}
+.footer-grid{display:grid;grid-template-columns:1.2fr 1fr 1.2fr .8fr;gap:40px}
+footer.site h3{font-family:var(--sans);font-weight:600;font-size:16px;color:var(--orbit-ink);margin-bottom:10px}
+footer.site p{max-width:34ch;line-height:1.55}
+footer.site .brand{color:var(--orbit-ink);margin-bottom:14px}
+footer.site .brand img{width:40px;height:40px}
+footer.site .brand span{font-size:24px}
+footer.site nav{display:grid;gap:8px;align-content:start}
+footer.site nav a{color:var(--orbit-ink);text-decoration:none}
+footer.site nav a:hover{text-decoration:underline}
+.footer-legal{margin-top:56px;font-size:14px}
+footer.site .footer-legal p{max-width:none;padding-top:24px;border-top:1px solid rgba(233,241,238,.14)}
+@media (max-width:900px){.footer-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.footer-grid{grid-template-columns:1fr}}
+
+@media (prefers-reduced-motion:no-preference){
+  .pulse-line path{stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:trace 2.8s cubic-bezier(.45,.05,.25,1) .4s forwards}
+  @keyframes trace{to{stroke-dashoffset:0}}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="bar">
+  <a class="brand" href="#top" aria-label="HEXTA, back to top"><picture><source srcset="assets/icon.svg" media="(prefers-reduced-motion: reduce)"><img src="assets/icon-anime.svg" alt="" width="42" height="42"></picture><span>HEXTA</span></a>
+  <nav aria-label="Sections">
+    <a href="#problem">Problem</a>
+    <a href="#solution">Solution</a>
+    <a href="#screens">Prototype</a>
+    <a href="#data">NASA data</a>
+    <a href="#impact">Impact</a>
+    <a href="#sources">Sources</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" id="top" aria-labelledby="hero-title">
+    <svg class="pulse-line" viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+      <path id="pulse" d="M0 70 C 240 64 600 60 900 60 L 1010 60 L 1032 38 L 1054 94 L 1078 12 L 1104 102 L 1126 60 L 1190 60 C 1300 61 1380 64 1440 68"/>
+    </svg>
+    <div class="hero-copy">
+      <h1 id="hero-title">Health care that keeps going when Earth goes quiet.</h1>
+      <p class="lede">HEXTA helps a long-duration crew log their health every day, see the trends that matter and hand the right information to the crew medical officer, even while the ground link is down.</p>
+      <div class="actions">
+        <a class="btn btn-main" href="#screens">See the prototype</a>
+        <a class="btn btn-ghost" href="#sources">Check our sources</a>
+      </div>
+      <p class="hero-meta">NASA Space Apps Challenge 2026, Casablanca. Team Synergy 5, École Centrale Casablanca. Simulated crew data.</p>
+    </div>
+  </section>
+
+  <section class="section" id="problem" aria-labelledby="problem-title">
+    <div class="wrap">
+      <h2 id="problem-title">Halfway to Mars, nobody on board is a doctor.</h2>
+      <div class="problem-grid" style="margin-top:56px">
+        <div>
+          <blockquote class="quote">
+            <p>“Imagine you are halfway to Mars. Suddenly, a colleague feels a sharp pain in the chest and collapses. What is happening? What should you do?”</p>
+            <footer>Rodrigo Leonardi, acting president of the Brazilian Space Agency, in the challenge video<span class="cite"><a href="#src-challenge">1</a></span></footer>
+          </blockquote>
+          <p class="problem-close">The challenge asks for a tool that explains how to take each measurement, why it matters and what to do when a value looks wrong, because astronauts are not physicians<span class="cite"><a href="#src-challenge">1</a></span>. Our answer starts earlier than the emergency: a daily routine that notices drift before it becomes a crisis, and a clear path to the crew medical officer when it does.</p>
+        </div>
+        <div class="facts">
+          <div class="fact"><strong>20 min</strong><p>Possible one-way delay for a message to Earth from Mars, with longer blackouts. Help has to start on board.<span class="cite"><a href="#src-hazards">2</a></span></p></div>
+          <div class="fact"><strong>6.09 h</strong><p>Average nightly sleep measured on ISS missions, short of the 7 hours recommended for adults on Earth.<span class="cite"><a href="#src-barger">3</a>,<a href="#src-aasm">4</a></span></p></div>
+          <div class="fact"><strong>5</strong><p>NASA hazards of human spaceflight: radiation, isolation, distance, gravity and closed environments. Each one leaves traces in the body.<span class="cite"><a href="#src-hazards">2</a></span></p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section loop-section" id="solution" aria-labelledby="solution-title">
+    <div class="wrap">
+      <h2 id="solution-title">One loop, from a morning check-in to the ground.</h2>
+      <p class="lede" style="margin-top:22px">Every step works offline and leaves a trace. HEXTA describes and escalates; the crew medical officer decides.</p>
+      <ol class="loop">
+        <li><h3>Remind</h3><p>A daily check-in task at 07:00 mission time, with a 30-minute snooze and a missed state the next day.</p></li>
+        <li><h3>Check in</h3><p>Sleep and sleepiness in under five minutes, plus mood, symptoms and optional readings. “Not recorded” stays visible.</p></li>
+        <li><h3>Explain</h3><p>Each reading keeps its unit, method and quality. Transparent rules flag three short nights in a row or a value past a reference threshold, and show the evidence.</p></li>
+        <li><h3>Review</h3><p>The crew medical officer gets a console with motivated states, trends with gaps, lab results and follow-up requests.</p></li>
+        <li><h3>Report</h3><p>A frozen individual report is queued for the ground and keeps the same ID until a receiver acknowledges it.</p></li>
+      </ol>
+      <div class="agent-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>
+        <p><b>Photo and webcam checks.</b> A crew member can photograph a skin finding or a urine sample, or hold still in front of the laptop camera for 20 seconds. The pulse is computed on the server from the colour of the face, without sending any video. Claude, Anthropic's vision model, describes what it sees, cites the knowledge base retrieved with MongoDB Atlas Search and never names a diagnosis. Server rules can only raise the escalation, never lower it.<span class="cite"><a href="#src-rppg">9</a></span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="screens" aria-labelledby="screens-title" style="padding-bottom:clamp(60px,8vw,110px)">
+    <div class="wrap screens-head">
+      <div>
+        <h2 id="screens-title">The working prototype.</h2>
+        <p class="lede" style="margin-top:18px">Nine screens from the guided scenario: day 138 is nominal, day 142 brings the third short night.</p>
+      </div>
+      <div class="track-controls">
+        <button type="button" id="autoplay" aria-pressed="true" aria-label="Pause the slideshow"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect class="ic-pause" x="6" y="5" width="4" height="14" rx="1"/><rect class="ic-pause" x="14" y="5" width="4" height="14" rx="1"/><path class="ic-play" d="M8 5.5v13l10.5-6.5z" style="display:none"/></svg></button>
+        <button type="button" data-dir="-1" aria-label="Previous screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m15 18-6-6 6-6"/></svg></button>
+        <button type="button" data-dir="1" aria-label="Next screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="track" id="track" tabindex="0" aria-label="Prototype screens, scroll horizontally">
+      <figure class="shot"><div class="frame"><img src="images/screens/01-bilan.jpg" width="1600" height="1000" alt="Daily overview on day 138: reminder banner, health summary and the five NASA hazards" loading="lazy"></div><figcaption><b>Daily overview</b><span>The next task, today's readings and the five hazards, with the ground link state always visible.</span></figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="images/screens/02-corps.jpg" width="1600" height="1000" alt="Body and risks screen with the 3D anatomy and the brain zone selected" loading="lazy"></div><figcaption><b>Body and risks</b><span>Touch a zone of the 3D body to see what is tracked there and why it matters.</span></figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="images/screens/03-check-in.jpg" width="1600" height="1000" alt="Daily check-in form" loading="lazy"></div><figcaption><b>Daily check-in</b><span>Short guided questions, with instructions next to each field.</span></figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="images/screens/04-suivi.jpg" width="1600" height="1000" alt="Trends screen with a sleep chart" loading="lazy"></div><figcaption><b>Trends</b><span>Dated readings, visible gaps and the personal reference.</span></figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="images/screens/05-soins.jpg" width="1600" height="1000" alt="Care and follow-up screen" loading="lazy"></div><figcaption><b>Follow-up</b><span>Actions, requests from the medical officer and their answers.</span></figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="images/screens/06-equipage.jpg" width="1600" height="1000" alt="Crew medical console listing the crew members" loading="lazy"></div><figcaption><b>Crew medical console</b><span>Each crew member with a reason, never a bare score.</span></figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="images/screens/07-bilan-j142-alerte.jpg" width="1600" height="1000" alt="Daily overview on day 142 showing the sleep alert" loading="lazy"></div><figcaption><b>Day 142: the sleep rule fires</b><span>336, 324 and 312 minutes. The three nights behind the alert are shown, labelled as a demo rule.</span></figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="images/screens/08-equipage-j142.jpg" width="1600" height="1000" alt="Crew console on day 142 with the medical officer task" loading="lazy"></div><figcaption><b>Medical officer's side</b><span>The review task arrives with the evidence and a follow-up request.</span></figcaption></figure>
+      <figure class="shot mobile"><div class="frame"><img src="images/screens/09-mobile-bilan.jpg" width="780" height="1688" alt="Daily overview on a phone" loading="lazy"></div><figcaption><b>On a phone</b><span>Same app, same data, one hand.</span></figcaption></figure>
+    </div>
+  </section>
+
+  <section class="section model-section" id="model" aria-labelledby="model-title">
+    <div class="wrap">
+      <h2 id="model-title">The body, in three dimensions.</h2>
+      <p class="lede" style="margin-top:20px">The prototype maps each health indicator to a place on the body. Turn the model and pick a zone.</p>
+      <div class="model-grid">
+        <div class="viewer" id="viewer" role="img" aria-label="Interactive 3D anatomy model. Drag to rotate.">
+          <p class="viewer-fallback" id="viewer-fallback">Loading the 3D model…</p>
+          <p class="viewer-hint" aria-hidden="true">Drag to turn</p>
+        </div>
+        <div>
+          <ul class="zones" id="zones">
+            <li><button type="button" data-zone="head" aria-pressed="true"><i></i><div><b>Brain and sleep</b><span>Sleep diary, sleepiness, mood. Isolation and irregular schedules erode sleep.<span class="cite"><a href="#src-hazards">2</a></span></span></div></button></li>
+            <li><button type="button" data-zone="eyes"><i></i><div><b>Eyes</b><span>Spaceflight-associated neuro-ocular syndrome: context card and symptom reporting.<span class="cite"><a href="#src-sans">8</a></span></span></div></button></li>
+            <li><button type="button" data-zone="heart"><i></i><div><b>Heart and blood pressure</b><span>Resting heart rate, blood pressure and SpO<sub>2</sub>, each with its method and posture.<span class="cite"><a href="#src-biomonitor">7</a></span></span></div></button></li>
+            <li><button type="button" data-zone="blood"><i></i><div><b>Blood</b><span>Haemoglobin and haematocrit entered by the medical officer, compared with a closed interval.<span class="cite"><a href="#src-osdr569">5</a></span></span></div></button></li>
+            <li><button type="button" data-zone="skin"><i></i><div><b>Skin and hydration</b><span>Photo checks of skin findings and urine colour, always reviewed by a human.<span class="cite"><a href="#src-crucian">10</a></span></span></div></button></li>
+            <li><button type="button" data-zone="radiation"><i></i><div><b>Whole body: radiation</b><span>Module dose rate in µGy/h with sensor and location, linked to the radiation hazard.<span class="cite"><a href="#src-cans">13</a></span></span></div></button></li>
+            <li><button type="button" data-zone="legs"><i></i><div><b>Muscles and bones</b><span>Exercise context. Microgravity costs bone and muscle every month.<span class="cite"><a href="#src-hazards">2</a></span></span></div></button></li>
+          </ul>
+          <p class="model-credit">3D anatomy model by Innerscene, public domain (CC0 1.0).<span class="cite"><a href="#src-model">12</a></span></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="health" aria-labelledby="health-title">
+    <div class="wrap">
+      <h2 id="health-title">What staying healthy in orbit really looks like.</h2>
+      <p class="lede" style="margin-top:22px">Astronauts already measure themselves on the ISS. HEXTA gives a future crew a single place to record these moments, read them in context and pass them on.</p>
+      <div class="health-grid">
+        <article class="card wide"><img src="images/nasa/iss073e0078566.jpg" width="1600" height="1067" alt="Astronauts Anne McClain and Takuya Onishi drawing blood samples aboard the ISS" loading="lazy"><div class="body"><h3>Blood draws, between experiments</h3><p>Crews collect blood at set times during long missions. HEXTA keeps the original value and unit, the collection time and the processing delay, because a late analysis changes the result.<span class="cite"><a href="#src-osdr569">5</a></span></p><p class="tracks">Tracked: haemoglobin, haematocrit, lab status, corrections</p></div></article>
+        <article class="card"><img src="images/nasa/iss054e022260.jpg" width="1600" height="1067" alt="Inside an ISS crew quarters sleeping bag" loading="lazy"><div class="body"><h3>Sleep in a closet-sized cabin</h3><p>Short nights add up quietly. The sleep diary is the centre of the daily check-in.<span class="cite"><a href="#src-barger">3</a></span></p><p class="tracks">Tracked: sleep minutes, sleepiness 1 to 9, mood</p></div></article>
+        <article class="card"><img src="images/nasa/iss058e003984.jpg" width="1600" height="1067" alt="Astronaut holding the Canadian Space Agency Bio-Monitor" loading="lazy"><div class="body"><h3>Vital signs, worn on the body</h3><p>The Canadian Bio-Monitor records pulse, breathing, SpO<sub>2</sub> and skin temperature on the ISS. HEXTA keeps such series apart from manual readings.<span class="cite"><a href="#src-biomonitor">7</a></span></p><p class="tracks">Tracked: heart rate, SpO<sub>2</sub>, temperature by site</p></div></article>
+        <article class="card"><img src="images/nasa/iss072e126509.jpg" width="1600" height="1067" alt="Astronaut Nick Hague exercising on the advanced resistive exercise device" loading="lazy"><div class="body"><h3>Two hours of exercise a day</h3><p>Resistive exercise slows the loss of bone and muscle in microgravity.<span class="cite"><a href="#src-hazards">2</a></span></p><p class="tracks">In HEXTA: exercise context, blood pressure at rest</p></div></article>
+        <article class="card"><img src="images/nasa/iss034e035949.jpg" width="1600" height="1063" alt="Tom Marshburn performing a tonometry eye exam on Chris Hadfield" loading="lazy"><div class="body"><h3>Eyes that change shape</h3><p>Long missions can change the eye. Trained crewmates run the exams themselves, so every measurement needs clear, step-by-step guidance.<span class="cite"><a href="#src-sans">8</a>,<a href="#src-challenge">1</a></span></p><p class="tracks">In HEXTA: guided measurement cards, symptom reporting</p></div></article>
+        <article class="card wide"><img src="images/nasa/iss056e097010.jpg" width="1600" height="1067" alt="Active Tissue Equivalent Dosimeter mounted inside a module of the ISS" loading="lazy"><div class="body"><h3>Radiation, measured where the crew lives</h3><p>Beyond Earth's magnetic field, radiation becomes one of the main health risks of the mission. HEXTA records module dosimeter readings in micrograys per hour, with the sensor, its location and the time window, and links them to the radiation hazard. These readings describe the environment: a personal effective dose needs individual dosimetry, measured against NASA's career limit.<span class="cite"><a href="#src-hazards">2</a>,<a href="#src-cans">13</a>,<a href="#src-std3001">11</a></span></p><p class="tracks">Tracked: dose rate (µGy/h) per sensor and module, history and gaps</p></div></article>
+        <article class="card alert-card"><div class="body"><h3>When something looks wrong</h3><p>Every alert takes the same traceable path, whether it comes from a rule, a photo check or a crew member's own worry.</p>
+          <ol class="alert-steps">
+            <li><span><b>Detected or reported.</b> A value past a watch or critical threshold, three short nights, a photo check needing review, or a concern a crew member reports in one tap.</span></li>
+            <li><span><b>Medical officer notified.</b> One notification per event, with the readings, their source and the rule version.</span></li>
+            <li><span><b>Reviewed and followed up.</b> The review is recorded; a follow-up can ask for a new check-in or measurement.</span></li>
+            <li><span><b>Reported to the ground.</b> The episode joins the next report, kept with its receipt.</span></li>
+          </ol></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="data" aria-labelledby="data-title" style="padding-top:0">
+    <div class="wrap">
+      <h2 id="data-title">Built on open NASA data.</h2>
+      <div class="data-grid">
+        <div class="datasets">
+          <div class="dataset"><h3>NASA OSDR, Inspiration4 crew</h3><p>7,768 real astronaut measurements from three studies: complete blood count (OSD-569), metabolic panel and cytokines (OSD-575), urine inflammation markers (OSD-656). They give historical context next to the simulated crew series, never mixed with them.<span class="cite"><a href="#src-osdr569">5</a>,<a href="#src-osdr575">6</a></span></p><p class="meta">CC0 1.0 · DOI 10.26030/e0rx-sh52 · every imported file fingerprinted with SHA-256</p></div>
+          <div class="dataset"><h3>NASA Human Research Program</h3><p>The five hazards and their risks structure the Body and risks screen and the indicator cards.<span class="cite"><a href="#src-hazards">2</a></span></p></div>
+          <div class="dataset"><h3>NASA standards and measurement practice</h3><p>NASA-STD-3001 for the cabin CO<sub>2</sub> limit and the career radiation dose limit, the Barger sleep study for the sleep context, the CSA Bio-Monitor and radiation instruments for the devices used in flight.<span class="cite"><a href="#src-barger">3</a>,<a href="#src-biomonitor">7</a>,<a href="#src-std3001">11</a>,<a href="#src-cans">13</a></span></p></div>
+        </div>
+        <aside class="osdr" aria-label="Example OSDR series">
+          <h3>Haemoglobin of one Inspiration4 crew member</h3>
+          <p>OSD-569, crew member C001, g/dL, before launch and after return. The band is the terrestrial reference range reported with the file.</p>
+          <svg class="spark" viewBox="0 0 520 220" role="img" aria-label="Haemoglobin values: 14.1, 14.9, 14.7 before launch; 14.7, 14.3, 15.7, 14.1 after return">
+            <rect class="ref" x="20" y="24" width="480" height="150" rx="10"/>
+            <path d="M40 139.4 L111 108.6 L182 116.3 L292 116.3 L363 131.7 L434 77.8 L480 139.4"/>
+            <circle cx="40" cy="139.4" r="5"/><circle cx="111" cy="108.6" r="5"/><circle cx="182" cy="116.3" r="5"/><circle cx="292" cy="116.3" r="5"/><circle cx="363" cy="131.7" r="5"/><circle cx="434" cy="77.8" r="5"/><circle cx="480" cy="139.4" r="5"/>
+            <line x1="237" y1="20" x2="237" y2="182" stroke="rgba(233,241,238,.35)" stroke-dasharray="4 5"/>
+            <text x="40" y="204" text-anchor="middle">L-92</text><text x="111" y="204" text-anchor="middle">L-44</text><text x="182" y="204" text-anchor="middle">L-3</text><text x="237" y="14" text-anchor="middle">flight</text><text x="292" y="204" text-anchor="middle">R+1</text><text x="363" y="204" text-anchor="middle">R+45</text><text x="434" y="204" text-anchor="middle">R+82</text><text x="480" y="204" text-anchor="middle">R+194</text>
+          </svg>
+          <small>Range 13.2 to 17.1 g/dL. Served by the HEXTA API at /api/v1/nasa/osdr/series.</small>
+        </aside>
+      </div>
+      <div class="stack" aria-label="Technical stack">
+        <b>Stack</b>
+        <span class="chip"><button type="button" aria-expanded="false" aria-controls="tip-0">Laravel 13 API</button><span class="tip" id="tip-0" role="note" hidden><b>Laravel 13 API</b><span>Role: the backend. 52 API routes handle check-ins, reminders, measurements, lab results, the medical console, reports and the ground receiver.</span><span>Why it fits: built-in validation, routing and testing let a small team ship a reliable API in a weekend, with every rule covered by tests.</span></span></span><span class="chip"><button type="button" aria-expanded="false" aria-controls="tip-1">MongoDB Atlas</button><span class="tip" id="tip-1" role="note" hidden><b>MongoDB Atlas</b><span>Role: the data store. Readings are versioned documents, photos live in GridFS, the knowledge base is searched with Atlas Search, and the ground receiver keeps each report with its receipt.</span><span>Why it fits: health readings have different shapes (a blood pressure pair, a photo, a dose rate with its sensor), and unique keys make offline re-sends safe.</span></span></span><span class="chip"><button type="button" aria-expanded="false" aria-controls="tip-2">Claude Vision</button><span class="tip" id="tip-2" role="note" hidden><b>Claude Vision</b><span>Role: reads crew photos of skin findings and urine colour, explains the webcam pulse result, and cites the documents it found in the knowledge base.</span><span>Why it fits: it describes what a non-physician sees in plain words. Server rules keep it from naming a diagnosis and can only raise an alert, never lower it.</span></span></span><span class="chip"><button type="button" aria-expanded="false" aria-controls="tip-3">Three.js</button><span class="tip" id="tip-3" role="note" hidden><b>Three.js</b><span>Role: draws the interactive 3D body and links each zone to the indicators tracked there.</span><span>Why it fits: lightweight WebGL that runs from local files, with a full 2D list when 3D is unavailable.</span></span></span><span class="chip"><button type="button" aria-expanded="false" aria-controls="tip-4">Offline-first web app</button><span class="tip" id="tip-4" role="note" hidden><b>Offline-first web app</b><span>Role: keeps check-ins, reminders and reports working on board, then syncs when the link returns.</span><span>Why it fits: a crew far from Earth cannot depend on a live connection to log their health.</span></span></span><span class="chip"><button type="button" aria-expanded="false" aria-controls="tip-5">Automated test suite</button><span class="tip" id="tip-5" role="note" hidden><b>Automated test suite</b><span>Role: checks the rules and the API on every change: the sleep rule, lab intervals, webcam pulse, report receipts and conflicts.</span><span>Why it fits: it proves the edge cases judges care about, such as 359 versus 360 minutes or a resent report keeping its receipt.</span></span></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section impact-section" id="impact" aria-labelledby="impact-title">
+    <div class="wrap">
+      <h2 id="impact-title">Who it helps.</h2>
+      <div class="impact-grid">
+        <div><h3>The crew</h3><p>A five-minute routine, their own trends in plain words, and the reassurance that a worry reaches someone, even with no signal.</p></div>
+        <div><h3>The crew medical officer</h3><p>One console instead of scattered notes: who needs attention, why, and what has already been asked.</p></div>
+        <div><h3>The ground team</h3><p>Complete reports with receipts when the link returns, instead of a flood of raw data.</p></div>
+        <div><h3>People on Earth</h3><p>The same loop fits polar stations, ships, mines and remote villages, where the nearest doctor is hours away. The challenge names these isolated communities too.<span class="cite"><a href="#src-challenge">1</a></span></p></div>
+      </div>
+      <div class="limits">
+        <h3>What HEXTA is not</h3>
+        <p>A prototype with simulated crew data, not a medical device. It does not diagnose or prescribe. Its alerts come from a labelled demo sleep rule and indicative reference thresholds taken from public sources: they prompt a review by the crew medical officer, they do not replace a validated mission medical policy, identities and software assurance.<span class="cite"><a href="#src-std3001">11</a></span></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="gateway" aria-labelledby="gateway-title">
+    <div class="wrap">
+      <h2 id="gateway-title">Ready for the next long mission.</h2>
+      <p>Our guided scenario runs aboard a fictional Gateway crew. Replay it, change a value, and watch the loop react.</p>
+      <div class="actions">
+        <a class="btn btn-main" href="#screens">Replay the scenario</a>
+        <a class="btn btn-ghost" href="#sources">Read the sources</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="sources" aria-labelledby="sources-title">
+    <div class="wrap">
+      <h2 id="sources-title">Sources.</h2>
+      <p class="lede" style="margin-top:18px">Every number and claim on this page points to one of these references.</p>
+      <ol class="sources">
+        <li id="src-challenge">NASA Space Apps Challenge 2026. <a href="https://www.spaceappschallenge.org/">Create health monitoring software for astronauts on space missions</a>, challenge statement and video by Rodrigo Leonardi, Brazilian Space Agency.</li>
+        <li id="src-hazards">NASA Human Research Program. <a href="https://www.nasa.gov/hrp/hazards/">Five Hazards of Human Spaceflight</a>, and the Human Research Roadmap risk pages.</li>
+        <li id="src-barger">Barger L.K. et al. Prevalence of sleep deficiency and use of hypnotic drugs in astronauts before, during, and after spaceflight. <i>Lancet Neurology</i>, 2014.</li>
+        <li id="src-aasm">Watson N.F. et al. Recommended amount of sleep for a healthy adult: a joint consensus statement of the AASM and SRS. <i>Sleep</i>, 2015.</li>
+        <li id="src-osdr569">NASA Open Science Data Repository. <a href="https://osdr.nasa.gov/bio/repo/data/studies/OSD-569">OSD-569</a>, Inspiration4 whole blood, complete blood count. CC0 1.0.</li>
+        <li id="src-osdr575">NASA Open Science Data Repository. <a href="https://osdr.nasa.gov/bio/repo/data/studies/OSD-575">OSD-575</a>, metabolic panel and cytokines; <a href="https://osdr.nasa.gov/bio/repo/data/studies/OSD-656">OSD-656</a>, urine inflammation panel. CC0 1.0.</li>
+        <li id="src-biomonitor">Canadian Space Agency. Bio-Monitor, the smart shirt that measures vital signs on the ISS.</li>
+        <li id="src-sans">NASA Human Research Program. Risk of Spaceflight Associated Neuro-ocular Syndrome (SANS).</li>
+        <li id="src-rppg">Wang W. et al. <a href="https://doi.org/10.1109/TBME.2016.2609282">Algorithmic principles of remote PPG</a>. <i>IEEE Transactions on Biomedical Engineering</i>, 2017.</li>
+        <li id="src-crucian">Crucian B. et al. Incidence of clinical symptoms during long-duration orbital spaceflight. <i>International Journal of General Medicine</i>, 2016.</li>
+        <li id="src-std3001">NASA. NASA-STD-3001, Space Flight Human-System Standard, Volumes 1 and 2 (including V1 4030, career effective dose limit, and V2 6004, cabin CO<sub>2</sub>).</li>
+        <li id="src-model">Innerscene. 3D human anatomy model, glTF 2.0, dedicated to the public domain under <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>.</li>
+        <li id="src-cans">Canadian Space Agency. Monitoring radiation for astronaut health: the Canadian Active Neutron Spectrometer (CANS) aboard the ISS.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap footer-grid">
+    <div class="footer-brand">
+      <a class="brand" href="#top"><img src="assets/icon.svg" alt=""><span>HEXTA</span></a>
+      <p>Crew health monitoring for long-duration missions.</p>
+    </div>
+    <div>
+      <h3>Team Synergy 5</h3>
+      <p>Engineering students at École Centrale Casablanca, Morocco.</p>
+    </div>
+    <div>
+      <h3>NASA Space Apps Challenge 2026</h3>
+      <p>Casablanca local event. Challenge: create health monitoring software for astronauts on space missions.</p>
+    </div>
+    <nav aria-label="Footer">
+      <a href="#problem">Problem</a>
+      <a href="#solution">Solution</a>
+      <a href="#screens">Prototype</a>
+      <a href="#data">NASA data</a>
+      <a href="#sources">Sources</a>
+    </nav>
+  </div>
+  <div class="wrap footer-legal">
+    <p>© 2026 Synergy 5, École Centrale Casablanca. Photographs courtesy of NASA. HEXTA is not affiliated with or endorsed by NASA.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var openChip = null;
+  function closeTip() {
+    if (!openChip) { return; }
+    openChip.setAttribute('aria-expanded', 'false');
+    document.getElementById(openChip.getAttribute('aria-controls')).hidden = true;
+    openChip = null;
+  }
+  document.querySelectorAll('.chip button').forEach(function (button) {
+    button.addEventListener('click', function (event) {
+      event.stopPropagation();
+      var wasOpen = openChip === button;
+      closeTip();
+      if (wasOpen) { return; }
+      var tip = document.getElementById(button.getAttribute('aria-controls'));
+      tip.hidden = false; tip.classList.remove('align-right');
+      if (tip.getBoundingClientRect().right > document.documentElement.clientWidth - 12) { tip.classList.add('align-right'); }
+      button.setAttribute('aria-expanded', 'true');
+      openChip = button;
+    });
+  });
+  document.addEventListener('click', closeTip);
+  document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && openChip) { var b = openChip; closeTip(); b.focus(); } });
+  document.addEventListener('scroll', closeTip, { passive: true });
+
+  var bar = document.querySelector('.bar');
+  function syncBar() { bar.classList.toggle('scrolled', window.scrollY > 40); }
+  window.addEventListener('scroll', syncBar, { passive: true });
+  syncBar();
+
+  var pulse = document.getElementById('pulse');
+  if (pulse) { pulse.style.setProperty('--len', Math.ceil(pulse.getTotalLength())); }
+
+  var track = document.getElementById('track');
+  function step(direction) {
+    var shot = track.querySelector('.shot');
+    var distance = shot ? shot.getBoundingClientRect().width + 28 : track.clientWidth * 0.8;
+    track.scrollBy({ left: direction * distance, behavior: reduceMotion ? 'auto' : 'smooth' });
+  }
+  document.querySelectorAll('.track-controls button[data-dir]').forEach(function (button) {
+    button.addEventListener('click', function () { stopAuto(); step(Number(button.dataset.dir)); });
+  });
+
+  var autoButton = document.getElementById('autoplay');
+  var autoTimer = null; var autoWanted = !reduceMotion; var trackVisible = false; var hovering = false;
+  function advance() {
+    if (hovering || !trackVisible || document.hidden) { return; }
+    var atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8;
+    if (atEnd) { track.scrollTo({ left: 0, behavior: 'smooth' }); } else { step(1); }
+  }
+  function syncAutoButton() {
+    autoButton.setAttribute('aria-pressed', String(autoWanted));
+    autoButton.setAttribute('aria-label', autoWanted ? 'Pause the slideshow' : 'Play the slideshow');
+    autoButton.querySelectorAll('.ic-pause').forEach(function (el) { el.style.display = autoWanted ? '' : 'none'; });
+    autoButton.querySelector('.ic-play').style.display = autoWanted ? 'none' : '';
+  }
+  function startAuto() { clearInterval(autoTimer); if (autoWanted) { autoTimer = setInterval(advance, 4200); } syncAutoButton(); }
+  function stopAuto() { autoWanted = false; clearInterval(autoTimer); syncAutoButton(); }
+  autoButton.addEventListener('click', function () { autoWanted = !autoWanted; startAuto(); });
+  track.addEventListener('mouseenter', function () { hovering = true; });
+  track.addEventListener('mouseleave', function () { hovering = false; });
+  track.addEventListener('focusin', function () { hovering = true; });
+  track.addEventListener('focusout', function () { hovering = false; });
+  track.addEventListener('touchstart', stopAuto, { passive: true });
+  new IntersectionObserver(function (entries) { trackVisible = entries[0].isIntersecting; }, { threshold: 0.4 }).observe(track);
+  startAuto();
+  track.addEventListener('keydown', function (event) {
+    if (event.key === 'ArrowRight') { event.preventDefault(); step(1); }
+    if (event.key === 'ArrowLeft') { event.preventDefault(); step(-1); }
+  });
+
+  var viewer = document.getElementById('viewer');
+  var fallback = document.getElementById('viewer-fallback');
+  var zones = document.getElementById('zones');
+  var focusTargets = { head: 0.92, eyes: 0.9, heart: 0.72, blood: 0.6, skin: 0.55, radiation: 0.5, legs: 0.28 };
+  var scene = null;
+
+  zones.addEventListener('click', function (event) {
+    var button = event.target.closest('button[data-zone]');
+    if (!button) { return; }
+    zones.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(b === button)); });
+    if (scene) { scene.focus(focusTargets[button.dataset.zone]); }
+  });
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = src; script.onload = resolve; script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+
+  function webglAvailable() {
+    try { var c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; }
+  }
+
+  function startViewer() {
+    if (!webglAvailable()) { fallback.textContent = 'Your browser cannot display WebGL. The zones on the right describe what HEXTA tracks.'; return; }
+    loadScript('vendor/three.min.js')
+      .then(function () { return loadScript('vendor/GLTFLoader.js'); })
+      .then(function () { return loadScript('vendor/RoomEnvironment.js'); })
+      .then(buildScene)
+      .catch(function () { fallback.textContent = 'The 3D model could not be loaded. The zones on the right describe what HEXTA tracks.'; });
+  }
+
+  function buildScene() {
+    var THREE = window.THREE;
+    var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    viewer.insertBefore(renderer.domElement, viewer.firstChild);
+
+    var world = new THREE.Scene();
+    var pmrem = new THREE.PMREMGenerator(renderer);
+    world.environment = pmrem.fromScene(new THREE.RoomEnvironment(), 0.04).texture;
+    renderer.toneMappingExposure = 0.85;
+    var camera = new THREE.PerspectiveCamera(30, 1, 0.01, 50);
+    var key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(2, 3, 4); world.add(key);
+    var rim = new THREE.DirectionalLight(0xe8a5b5, 0.9); rim.position.set(-3, 2, -3); world.add(rim);
+
+    var pivot = new THREE.Group(); world.add(pivot);
+    var satellites = new THREE.Group(); world.add(satellites);
+    [0x4f8c77, 0x8c2d45, 0xe6d7b5, 0x4f8c77, 0x8c2d45, 0x9db5b0].forEach(function (color, index) {
+      var satellite = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 24, 16),
+        new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.35, roughness: 0.35 })
+      );
+      satellite.userData.phase = (index / 6) * Math.PI * 2;
+      satellites.add(satellite);
+    });
+    var clock = new THREE.Clock();
+    var height = 1; var zoneY = 0.92; var zoneTarget = 0.92; var targetY = 0.6; var lookY = 0.6; var yaw = 0.35; var yawVelocity = 0; var dragging = false; var lastX = 0;
+
+    function onModel(gltf) {
+      var model = gltf.scene;
+      var box = new THREE.Box3().setFromObject(model);
+      var size = box.getSize(new THREE.Vector3()); var center = box.getCenter(new THREE.Vector3());
+      model.position.sub(center); model.position.y += size.y / 2;
+      height = size.y;
+      satellites.children.forEach(function (satellite) { satellite.scale.setScalar(height * 0.016); });
+      model.traverse(function (node) {
+        if (node.isMesh) {
+          node.material = new THREE.MeshStandardMaterial({ color: 0xb9d3c9, roughness: 0.6, metalness: 0.04 });
+        }
+      });
+      pivot.add(model);
+      fallback.remove();
+      scene.focus(focusTargets.head);
+      resize(); render();
+    }
+    function onModelError() { fallback.textContent = 'The 3D model could not be loaded. The zones on the right describe what HEXTA tracks.'; }
+
+    loadScript('assets/hexta-body.glb.js').then(function () {
+      var binary = atob(window.HEXTA_BODY_GLB);
+      var bytes = new Uint8Array(binary.length);
+      for (var i = 0; i < binary.length; i++) { bytes[i] = binary.charCodeAt(i); }
+      window.HEXTA_BODY_GLB = null;
+      new THREE.GLTFLoader().parse(bytes.buffer, '', onModel, onModelError);
+    }).catch(function () {
+      new THREE.GLTFLoader().load('assets/hexta-body.glb', onModel, undefined, onModelError);
+    });
+
+    function resize() {
+      var w = viewer.clientWidth, h = viewer.clientHeight;
+      renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    }
+    window.addEventListener('resize', function () { resize(); render(); });
+
+    viewer.addEventListener('pointerdown', function (e) { dragging = true; lastX = e.clientX; viewer.setPointerCapture(e.pointerId); });
+    viewer.addEventListener('pointermove', function (e) { if (!dragging) { return; } yawVelocity = (e.clientX - lastX) * 0.01; yaw += yawVelocity; lastX = e.clientX; render(); });
+    viewer.addEventListener('pointerup', function () { dragging = false; });
+
+    var visible = false; var frame = null;
+    new IntersectionObserver(function (entries) { visible = entries[0].isIntersecting; if (visible) { loop(); } }).observe(viewer);
+
+    function loop() {
+      if (frame) { return; }
+      frame = requestAnimationFrame(function tick() {
+        frame = null;
+        if (!dragging) { yawVelocity *= 0.92; yaw += yawVelocity + (reduceMotion ? 0 : 0.0025); }
+        lookY += (targetY - lookY) * (reduceMotion ? 1 : 0.08);
+        render();
+        if (visible && !document.hidden) { loop(); }
+      });
+    }
+
+    function render() {
+      var t = reduceMotion ? 0 : clock.getElapsedTime();
+      pivot.rotation.y = yaw;
+      pivot.position.y = Math.sin(t * 0.9) * height * 0.008;
+      var orbitRadius = height * (0.12 + 0.12 * (1 - Math.abs(zoneY - 0.55) * 1.6));
+      zoneY += (zoneTarget - zoneY) * (reduceMotion ? 1 : 0.08);
+      satellites.children.forEach(function (satellite) {
+        var angle = satellite.userData.phase + t * 0.8;
+        satellite.position.set(Math.cos(angle) * orbitRadius, height * zoneY + Math.sin(angle * 2) * height * 0.012, Math.sin(angle) * orbitRadius);
+      });
+      var distance = height * 2.3;
+      camera.position.set(0, height * lookY + height * 0.02, distance);
+      camera.lookAt(0, height * lookY, 0);
+      renderer.render(world, camera);
+    }
+
+    scene = { focus: function (fraction) { zoneTarget = fraction; targetY = 0.42 + fraction * 0.2; if (reduceMotion) { render(); } } };
+  }
+
+  if ('IntersectionObserver' in window) {
+    var started = false;
+    new IntersectionObserver(function (entries, observer) {
+      if (entries[0].isIntersecting && !started) { started = true; observer.disconnect(); startViewer(); }
+    }, { rootMargin: '400px' }).observe(viewer);
+  } else {
+    startViewer();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Working notes kept locally (superseded by README.md)
+COMPLETION-CHECKLIST.md
+DEPLOY-NOW.md
+FINAL-DELIVERY-SUMMARY.md
+IMPROVEMENTS-APPLIED.md
+INDEX.md
+NASA-SUBMISSION.md
+QUICK-START.md
+UI-UX-REVIEW.md
+verify-ready.sh
+
+# Assets not used by the page
+assets/HEXTA-3D-compact-fixe.svg
+images/nasa/credits.tsv
+fonts/figtree-400-latin-ext.woff2
+assets/HEXTA-3D-compact-anime.svg
